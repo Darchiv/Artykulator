@@ -17,20 +17,24 @@
 
             <p:layout fullPage="true">
 
-                <p:layoutUnit position="north" size="100" resizable="true" closable="true" collapsible="true">
-                    Header
-                </p:layoutUnit>
-
-                <p:layoutUnit position="south" size="100" closable="true" collapsible="true">
-                    Footer
-                </p:layoutUnit>
-
                 <p:layoutUnit position="west" size="175" header="Left" collapsible="true">
-                    Left
+                    <a href="users.xhtml">Users</a>
+                    <a href="articles.xhtml">Articles</a>
                 </p:layoutUnit>
 
                 <p:layoutUnit position="center">
-                    Welcome to PrimeFaces
+
+                    <p:dataTable emptyMessage="No users." value="#{userFacade.findAll()}" var="user">
+                        <p:column>
+                            <f:facet name="header">ID</f:facet>
+                            <h:outputText value="#{user.getId()}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">Name</f:facet>
+                            <h:outputText value="#{user.getName()}"/>
+                        </p:column>
+                    </p:dataTable>
+                                
                 </p:layoutUnit>
 
             </p:layout>

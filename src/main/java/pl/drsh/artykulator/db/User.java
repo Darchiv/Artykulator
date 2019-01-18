@@ -11,7 +11,6 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,7 +28,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author drsh
  */
 @Entity
-@Table(name = "Users")
+@Table(name = "USERS", catalog = "", schema = "APP")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
@@ -41,17 +40,17 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "id")
+    @Column(name = "ID")
     private Integer id;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 128)
-    @Column(name = "name")
+    @Column(name = "NAME")
     private String name;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "addedBy", fetch = FetchType.LAZY)
-    private List<Article> articleList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
     private List<Revision> revisionList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "addedBy")
+    private List<Article> articleList;
 
     public User() {
     }
@@ -82,21 +81,21 @@ public class User implements Serializable {
     }
 
     @XmlTransient
-    public List<Article> getArticleList() {
-        return articleList;
-    }
-
-    public void setArticleList(List<Article> articleList) {
-        this.articleList = articleList;
-    }
-
-    @XmlTransient
     public List<Revision> getRevisionList() {
         return revisionList;
     }
 
     public void setRevisionList(List<Revision> revisionList) {
         this.revisionList = revisionList;
+    }
+
+    @XmlTransient
+    public List<Article> getArticleList() {
+        return articleList;
+    }
+
+    public void setArticleList(List<Article> articleList) {
+        this.articleList = articleList;
     }
 
     @Override

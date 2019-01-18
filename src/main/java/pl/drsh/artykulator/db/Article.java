@@ -12,7 +12,6 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -35,7 +34,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author drsh
  */
 @Entity
-@Table(name = "Articles")
+@Table(name = "ARTICLES", catalog = "", schema = "APP")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Article.findAll", query = "SELECT a FROM Article a")
@@ -49,31 +48,29 @@ public class Article implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
-    @Column(name = "id")
+    @Column(name = "ID")
     private Integer id;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 128)
-    @Column(name = "title")
+    @Column(name = "TITLE")
     private String title;
     @Size(max = 1024)
-    @Column(name = "description")
+    @Column(name = "DESCRIPTION")
     private String description;
     @Basic(optional = false)
     @NotNull
-    @Column(name = "date_added")
+    @Column(name = "DATE_ADDED")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateAdded;
-    @Basic(optional = false)
-    @NotNull
     @Lob
-    @Column(name = "file")
-    private Serializable file;
-    @JoinColumn(name = "added_by", referencedColumnName = "id")
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private User addedBy;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article", fetch = FetchType.LAZY)
+    @Column(name = "FILE")
+    private byte[] file;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "article")
     private List<Revision> revisionList;
+    @JoinColumn(name = "ADDED_BY", referencedColumnName = "ID")
+    @ManyToOne(optional = false)
+    private User addedBy;
 
     public Article() {
     }
@@ -82,11 +79,10 @@ public class Article implements Serializable {
         this.id = id;
     }
 
-    public Article(Integer id, String title, Date dateAdded, Serializable file) {
+    public Article(Integer id, String title, Date dateAdded) {
         this.id = id;
         this.title = title;
         this.dateAdded = dateAdded;
-        this.file = file;
     }
 
     public Integer getId() {
@@ -121,20 +117,12 @@ public class Article implements Serializable {
         this.dateAdded = dateAdded;
     }
 
-    public Serializable getFile() {
+    public byte[] getFile() {
         return file;
     }
 
-    public void setFile(Serializable file) {
+    public void setFile(byte[] file) {
         this.file = file;
-    }
-
-    public User getAddedBy() {
-        return addedBy;
-    }
-
-    public void setAddedBy(User addedBy) {
-        this.addedBy = addedBy;
     }
 
     @XmlTransient
@@ -144,6 +132,14 @@ public class Article implements Serializable {
 
     public void setRevisionList(List<Revision> revisionList) {
         this.revisionList = revisionList;
+    }
+
+    public User getAddedBy() {
+        return addedBy;
+    }
+
+    public void setAddedBy(User addedBy) {
+        this.addedBy = addedBy;
     }
 
     @Override

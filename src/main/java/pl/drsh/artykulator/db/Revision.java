@@ -11,7 +11,6 @@ import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -27,7 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author drsh
  */
 @Entity
-@Table(name = "Revisions")
+@Table(name = "REVISIONS", catalog = "", schema = "APP")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Revision.findAll", query = "SELECT r FROM Revision r")
@@ -41,15 +40,15 @@ public class Revision implements Serializable {
     protected RevisionPK revisionPK;
     @Basic(optional = false)
     @NotNull
-    @Column(name = "date_changed")
+    @Column(name = "DATE_CHANGED")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateChanged;
-    @JoinColumn(name = "article_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "ARTICLE_ID", referencedColumnName = "ID", insertable = false, updatable = false)
+    @ManyToOne(optional = false)
     private Article article;
-    @JoinColumn(name = "user", referencedColumnName = "id")
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private User user;
+    @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
+    @ManyToOne(optional = false)
+    private User userId;
 
     public Revision() {
     }
@@ -91,12 +90,12 @@ public class Revision implements Serializable {
         this.article = article;
     }
 
-    public User getUser() {
-        return user;
+    public User getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(User userId) {
+        this.userId = userId;
     }
 
     @Override

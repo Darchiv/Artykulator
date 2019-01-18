@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Article management</title>
+    </h:head>
+    <h:body>
+        
+        <p:layout fullPage="true">
+
+            <p:layoutUnit position="west" size="175" header="Left" collapsible="true">
+                <a href="users.xhtml">Users</a>
+                <a href="articles.xhtml">Articles</a>
+            </p:layoutUnit>
+
+            <p:layoutUnit position="center">
+
+                <p:dataTable id="articleList" emptyMessage="No articles." value="#{articleFacade.findAll()}" var="article">
+                    <p:column>
+                        <f:facet name="header">ID</f:facet>
+                        <h:outputText value="#{article.getId()}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Title</f:facet>
+                        <h:outputText value="#{article.getTitle()}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Description</f:facet>
+                        <h:outputText value="#{article.getDescription()}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Date added</f:facet>
+                        <h:outputText value="#{article.getDateAdded()}"/>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Added by</f:facet>
+                        <h:outputText value="#{article.getAddedBy().getName()}"/>
+                    </p:column>
+                    <p:column>
+                        <p:dataTable emptyMessage="No changes." value="#{article.getRevisionList()}" var="revision">
+                            <p:column>
+                                <f:facet name="header">User</f:facet>
+                                <h:outputText value="#{revision.getUserId().getName()}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">Date changed</f:facet>
+                                <h:outputText value="#{revision.getDateChanged()}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:column>
+                    <p:column>
+                        <f:facet name="header">Action</f:facet>
+
+                        <p:commandButton value = "delete" action="#{articleManager.remove(article.getId())}" update=":articleList"/>
+          
+                    </p:column>
+                </p:dataTable>
+                
+                Create new article entry:<br/>
+                <h:form enctype="multipart/form-data">
+                    Title:
+                    <p:inputText value="#{articleManager.title}">
+                        <f:validateRequired/>
+                        <f:validateLength minimum="1" maximum="128"/>
+                    </p:inputText>
+                    Description:
+                    <p:inputText value="#{articleManager.description}">
+                        <f:validateLength minimum="0" maximum="1024"/>
+                    </p:inputText>
+                    
+                    User:
+                    <p:inputText value="#{articleManager.addedBy}">
+                        <f:validateRequired/>
+                        <f:convertNumber/>
+                    </p:inputText>
+                    
+                    Article file:
+                    <p:fileUpload value="#{articleManager.file}" mode="simple" />
+                    
+                    <p:commandButton value="Add" ajax="false" actionListener="#{articleManager.add}" />
+                             
+                </h:form>
+
+            </p:layoutUnit>
+
+        </p:layout>
+        
+    </h:body>
+</html>
+

@@ -20,10 +20,10 @@ public class RevisionPK implements Serializable {
 
     @Basic(optional = false)
     @NotNull
-    @Column(name = "article_id")
+    @Column(name = "ARTICLE_ID")
     private int articleId;
     @Basic(optional = false)
-    @Column(name = "id")
+    @Column(name = "ID")
     private int id;
 
     public RevisionPK() {

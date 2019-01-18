@@ -6,7 +6,7 @@
         <property name="portNumber" value="1527"/>
         <property name="databaseName" value="Aggregator"/>
         <property name="User" value="root"/>
-        <property name="Password" value=""/>
+        <property name="Password" value="root"/>
         <property name="URL" value="jdbc:derby://localhost:1527/Aggregator"/>
         <property name="driverClass" value="org.apache.derby.jdbc.ClientDriver"/>
     </jdbc-connection-pool>
