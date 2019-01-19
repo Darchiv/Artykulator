@@ -7,6 +7,7 @@ package pl.drsh.artykulator.db;
 
 import java.io.Serializable;
 import java.util.List;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -47,8 +48,10 @@ public class User implements Serializable {
     @Size(min = 1, max = 128)
     @Column(name = "NAME")
     private String name;
+    @JsonbTransient
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
     private List<Revision> revisionList;
+    @JsonbTransient
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "addedBy")
     private List<Article> articleList;
 

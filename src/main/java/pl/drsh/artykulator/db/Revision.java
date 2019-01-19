@@ -7,6 +7,7 @@ package pl.drsh.artykulator.db;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.json.bind.annotation.JsonbTransient;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -45,6 +46,7 @@ public class Revision implements Serializable {
     private Date dateChanged;
     @JoinColumn(name = "ARTICLE_ID", referencedColumnName = "ID", insertable = false, updatable = false)
     @ManyToOne(optional = false)
+    @JsonbTransient
     private Article article;
     @JoinColumn(name = "USER_ID", referencedColumnName = "ID")
     @ManyToOne(optional = false)

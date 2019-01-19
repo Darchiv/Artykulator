@@ -87,7 +87,7 @@ public class ArticleManager {
         article.setAddedBy(userFacade.find(this.addedBy));
         article.setDateAdded(new Date());
 
-        if (file != null) {
+        if (file != null && file.getSize() > 0) {
             InputStream input = file.getInputstream();
             int len;
             byte[] buf = new byte[1024*1024];
@@ -105,7 +105,6 @@ public class ArticleManager {
     }
 
     public void remove(int id) throws AbortProcessingException {
-        System.err.println("Remove id = " + id);
         articleFacade.remove(articleFacade.find(id));
     }
     
@@ -116,7 +115,7 @@ public class ArticleManager {
         article.setDescription(this.description);
         article.setAddedBy(userFacade.find(this.addedBy));
 
-        if (file != null) {
+        if (file != null && file.getSize() > 0) {
             InputStream input = file.getInputstream();
             int len;
             byte[] buf = new byte[1024*1024];
