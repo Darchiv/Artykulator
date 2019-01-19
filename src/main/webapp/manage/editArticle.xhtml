@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:head>
+        <title>Edit article</title>
+    </h:head>
+    <h:body>
+        <p:layout fullPage="true">
+
+            <p:layoutUnit position="west" size="175" header="Left" collapsible="true">
+                <a href="users.xhtml">Users</a><br/>
+                <a href="articles.xhtml">Articles</a>
+            </p:layoutUnit>
+
+            <p:layoutUnit position="center">
+                
+                Edit the article:<br/>
+                
+                <h:form enctype="multipart/form-data">
+                    <h:inputHidden value="#{articleManager.editId}"/>
+                    
+                    Title:<br/>
+                    <p:inputText value="#{articleManager.title}">
+                        <f:validateRequired/>
+                        <f:validateLength minimum="1" maximum="128"/>
+                    </p:inputText><br/>
+                    Description:<br/>
+                    <p:inputText value="#{articleManager.description}">
+                        <f:validateLength minimum="0" maximum="1024"/>
+                    </p:inputText><br/>
+                    
+                    User:<br/>
+                    <p:inputText value="#{articleManager.addedBy}">
+                        <f:validateRequired/>
+                        <f:convertNumber/>
+                    </p:inputText><br/>
+                    
+                    Article file:<br/>
+                    <p:fileUpload value="#{articleManager.file}" mode="simple" /><br/>
+                    
+                    Editing user:<br/>
+                    <p:inputText value="#{articleManager.modifiedBy}">
+                        <f:validateRequired/>
+                        <f:convertNumber/>
+                    </p:inputText><br/>
+                    
+                    <p:commandButton value="Save changes" ajax="false" actionListener="#{articleManager.edit}" />
+                             
+                </h:form>
+
+            </p:layoutUnit>
+
+        </p:layout>
+    </h:body>
+</html>
+

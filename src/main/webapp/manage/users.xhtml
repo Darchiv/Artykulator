@@ -18,13 +18,13 @@
             <p:layout fullPage="true">
 
                 <p:layoutUnit position="west" size="175" header="Left" collapsible="true">
-                    <a href="users.xhtml">Users</a>
+                    <a href="users.xhtml">Users</a><br/>
                     <a href="articles.xhtml">Articles</a>
                 </p:layoutUnit>
 
                 <p:layoutUnit position="center">
 
-                    <p:dataTable emptyMessage="No users." value="#{userFacade.findAll()}" var="user">
+                    <p:dataTable id="userList" emptyMessage="No users." value="#{userFacade.findAll()}" var="user">
                         <p:column>
                             <f:facet name="header">ID</f:facet>
                             <h:outputText value="#{user.getId()}"/>
@@ -33,7 +33,28 @@
                             <f:facet name="header">Name</f:facet>
                             <h:outputText value="#{user.getName()}"/>
                         </p:column>
+                        <p:column>
+                            <f:facet name="header">Action</f:facet>
+
+                            <h:form>
+                                <p:commandButton value="delete" action="#{userManager.remove(user.getId())}" update=":userList"/>
+                            </h:form>
+                            <p:button value="edit" outcome="editUser.xhtml?id=#{user.getId()}"/>
+
+                        </p:column>
                     </p:dataTable>
+                    
+                    Create new user:<br/>
+                    <h:form>
+                        Name:<br/>
+                        <p:inputText value="#{userManager.name}">
+                            <f:validateRequired/>
+                            <f:validateLength minimum="1" maximum="128"/>
+                        </p:inputText><br/>
+
+                        <p:commandButton value="Add" actionListener="#{userManager.add}" update=":userList"/>
+
+                    </h:form>
                                 
                 </p:layoutUnit>
 

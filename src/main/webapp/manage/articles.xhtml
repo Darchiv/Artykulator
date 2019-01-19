@@ -12,7 +12,7 @@
         <p:layout fullPage="true">
 
             <p:layoutUnit position="west" size="175" header="Left" collapsible="true">
-                <a href="users.xhtml">Users</a>
+                <a href="users.xhtml">Users</a><br/>
                 <a href="articles.xhtml">Articles</a>
             </p:layoutUnit>
 
@@ -53,32 +53,36 @@
                     </p:column>
                     <p:column>
                         <f:facet name="header">Action</f:facet>
-
-                        <p:commandButton value = "delete" action="#{articleManager.remove(article.getId())}" update=":articleList"/>
-          
+                        
+                        <h:form>
+                            <p:commandButton value="delete" action="#{articleManager.remove(article.getId())}" update=":articleList"/>
+                        </h:form>
+                        
+                        <p:button value="edit" outcome="editArticle.xhtml?id=#{article.getId()}"/>
+                        
                     </p:column>
                 </p:dataTable>
                 
                 Create new article entry:<br/>
                 <h:form enctype="multipart/form-data">
-                    Title:
+                    Title:<br/>
                     <p:inputText value="#{articleManager.title}">
                         <f:validateRequired/>
                         <f:validateLength minimum="1" maximum="128"/>
-                    </p:inputText>
-                    Description:
+                    </p:inputText><br/>
+                    Description:<br/>
                     <p:inputText value="#{articleManager.description}">
                         <f:validateLength minimum="0" maximum="1024"/>
-                    </p:inputText>
+                    </p:inputText><br/>
                     
-                    User:
+                    User:<br/>
                     <p:inputText value="#{articleManager.addedBy}">
                         <f:validateRequired/>
                         <f:convertNumber/>
-                    </p:inputText>
+                    </p:inputText><br/>
                     
-                    Article file:
-                    <p:fileUpload value="#{articleManager.file}" mode="simple" />
+                    Article file:<br/>
+                    <p:fileUpload value="#{articleManager.file}" mode="simple" /><br/>
                     
                     <p:commandButton value="Add" ajax="false" actionListener="#{articleManager.add}" />
                              

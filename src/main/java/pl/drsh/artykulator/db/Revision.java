@@ -57,11 +57,12 @@ public class Revision implements Serializable {
         this.revisionPK = revisionPK;
     }
 
-    public Revision(RevisionPK revisionPK, Date dateChanged) {
+    public Revision(RevisionPK revisionPK, Date dateChanged, User userId) {
         this.revisionPK = revisionPK;
         this.dateChanged = dateChanged;
+        this.userId = userId;
     }
-
+    
     public Revision(int articleId, int id) {
         this.revisionPK = new RevisionPK(articleId, id);
     }

@@ -9,6 +9,9 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -22,11 +25,16 @@ public class RevisionPK implements Serializable {
     @NotNull
     @Column(name = "ARTICLE_ID")
     private int articleId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "ID")
     private int id;
 
     public RevisionPK() {
+    }
+    
+    public RevisionPK(int articleId) {
+        this.articleId = articleId;
     }
 
     public RevisionPK(int articleId, int id) {
