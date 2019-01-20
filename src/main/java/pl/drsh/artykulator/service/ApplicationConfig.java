@@ -30,6 +30,8 @@ public class ApplicationConfig extends Application {
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(pl.drsh.artykulator.service.ArticleFacadeREST.class);
+        resources.add(pl.drsh.artykulator.service.HowToBasic.class);
+        resources.add(pl.drsh.artykulator.service.IsAlive.class);
         resources.add(pl.drsh.artykulator.service.UserFacadeREST.class);
     }
     
