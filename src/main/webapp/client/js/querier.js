@@ -53,7 +53,9 @@ function buildLevel(namespace, obj, level, props) {
     var result = Object.keys(obj).map((key) => {
         var element
         
-        if (typeof obj[key] == 'object') {
+        if (Array.isArray(obj[key])) {
+            element = buildLevel(namespace + '.' + key, obj[key], level + 1, props)
+        } else if (typeof obj[key] == 'object') {
             element = buildLevel(namespace + '.' + key, obj[key], level + 1, props)
         } else if (obj[key] == 'text') {
             element = h('input', {type: 'text', id: 'qb_' + namespace + '.' + key})
@@ -82,34 +84,77 @@ function buildLevel(namespace, obj, level, props) {
         )
     })
     
-    result.unshift(h('div', {style: {'padding-left': level*30 + 'px'}}, "{"))
+    result.unshift(h('div', {style: {'padding-left': level*30 + 'px'}}, Array.isArray(obj) ? "[" : "{"))
     
-    result.push(h('input', {
-        type: 'text',
-        id: 'newObjInput_' + namespace,
-        style: {'margin-left': (level+1)*30 + 'px'}
-    }))
+    if (!Array.isArray(obj)) {
+        result.push(h('input', {
+            type: 'text',
+            id: 'newFieldInput_' + namespace,
+            style: {'margin-left': (level+1)*30 + 'px'}
+        }))
+
+        result.push(h('select', {
+            id: 'newFieldType_' + namespace
+        }, [
+            h('option', {value: 'text'}, "Text"),
+            h('option', {value: 'number'}, "Number"),
+            h('option', {value: 'fileArr'}, "File (array)"),
+            //h('option', {value: 'fileBase'}, "File (base64)")
+        ]))
+
+        result.push(h('button', {
+            className: 'btn btn-primary',
+            onClick: props.onNewField.bind(null, obj, 'newFieldInput_' + namespace, 'newFieldType_' + namespace),
+        }, "Add a field"))
+    
+        result.push(h('br'))
+    
+        result.push(h('input', {
+            type: 'text',
+            id: 'newObjInput_' + namespace,
+            style: {'margin-left': (level+1)*30 + 'px'}
+        }))
+    }
     
     result.push(h('button', {
         className: 'btn btn-primary',
-        onClick: props.onNewObject.bind(null, obj, 'newObjInput_' + namespace),
+        onClick: props.onNewObject.bind(null, obj, Array.isArray(obj) ? null : ('newObjInput_' + namespace)),
     }, "Add an object"))
     
-    result.push(h('div', {style: {'padding-left': level*30 + 'px'}}, "}"))
+    result.push(h('button', {
+        className: 'btn btn-primary',
+        onClick: props.onNewArray.bind(null, obj, 'newObjInput_' + namespace),
+    }, "Add an array"))
+    
+    
+    result.push(h('div', {style: {'padding-left': level*30 + 'px'}}, Array.isArray(obj) ? "]" : "}"))
     
     console.log("buildLevel", result)
     return result
 }
 
 async function buildRequest(request, namespace, obj) {
+    console.log('buildRequest: ', request, namespace, obj)
+
+    const putElem = (element, target, key) => {
+        if (Array.isArray(target)) {
+            request.push(element)
+        } else {
+            request[key] = element
+        }
+    }
+
     Object.keys(obj).map(async (key) => {
         var element
-        
-        console.log('buildRequest, mapping: ', namespace, key)
-        
-        if (typeof obj[key] == 'object') {
-            request[key] = {}
-            buildRequest(request[key], namespace + '.' + key, obj[key])
+
+        if (Array.isArray(obj[key])) {
+            var newElem = []
+            putElem(newElem, request, key)
+            buildRequest(newElem, namespace + '.' + key, obj[key])
+        } else if (typeof obj[key] == 'object') {
+            var newElem = {}
+            putElem(newElem, request, key)
+            buildRequest(newElem, namespace + '.' + key, obj[key])
         } else if (obj[key] == 'text') {
             element = document.getElementById('qb_' + namespace + '.' + key)
             request[key] = element.value
@@ -119,7 +164,7 @@ async function buildRequest(request, namespace, obj) {
         } else if (obj[key] == 'fileArr') {
             request[key] = fileData['qb_' + namespace + '.' + key]
         } else if (obj[key] == 'fileBase') {
-            
+
         } else {
             console.warn("Invalid input type: ", obj[key])
         }
@@ -279,23 +324,45 @@ class Main extends preact.Component {
     }
     
     onNewObject(parent, id) {
-        var objName = document.getElementById(id).value
-        console.log('onNewObject', parent, objName)
+        console.log('onNewObject', parent, id)
         
-        if (!objName) return
-        
-        parent[objName] = {}
-        
-        document.getElementById(id).value = ''
-        
-        console.log(parent)
-        
+        if (Array.isArray(parent)) {
+            parent.push({})
+        } else {
+            var objName = document.getElementById(id).value
+            
+            if (!objName) return
+            parent[objName] = {}
+            
+            document.getElementById(id).value = ''
+        }
+
         this.forceUpdate()
-        //this.setState({query: this.state.query})
     }
     
-    onNewArray(parent) {
-        console.log('onNewArray', parent)
+    onNewArray(parent, fieldId) {
+        var arrName = document.getElementById(fieldId).value
+        console.log('onNewArray', parent, arrName)
+        
+        if (!arrName) return
+        parent[arrName] = []
+        
+        document.getElementById(fieldId).value = ''
+
+        this.forceUpdate()
+    }
+    
+    onNewField(parent, fieldId, typeId) {
+        var fieldName = document.getElementById(fieldId).value
+        var typeName = document.getElementById(typeId).selectedOptions[0].value
+        console.log('onNewField', parent, fieldName, typeName)
+        
+        if (!fieldName) return
+        parent[fieldName] = typeName
+        
+        document.getElementById(fieldId).value = ''
+        
+        this.forceUpdate()
     }
 
     render(props, state) {
@@ -318,6 +385,7 @@ class Main extends preact.Component {
                     h(QueryBuilder, {
                         onNewObject: this.onNewObject.bind(this),
                         onNewArray: this.onNewArray.bind(this),
+                        onNewField: this.onNewField.bind(this),
                         schema: this.state.query.params,
                         method: this.state.query.method,
                         url: this.state.query.url,
