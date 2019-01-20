@@ -313,14 +313,20 @@ class Main extends preact.Component {
     selectedQuery(query) {
         console.log('selectedQuery', query)
         
+        var params
+        
         try {
-            query.params = JSON.parse(query.params);
+            params = JSON.parse(query.params);
         } catch (e) {
             console.warn(e.message)
-            query.params = {}
+            params = {}
         }
         
-        this.setState({query: query})
+        this.setState({query: {
+            url: query.url,
+            method: query.method,
+            params: params
+        }})
     }
     
     onNewObject(parent, id) {
