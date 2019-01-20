@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "QUERIES", catalog = "", schema = "ROOT")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Query.findAll", query = "SELECT q FROM Query q")
+    @NamedQuery(name = "Query.findAll", query = "SELECT q FROM Query q ORDER BY q.id DESC")
     , @NamedQuery(name = "Query.findById", query = "SELECT q FROM Query q WHERE q.id = :id")
     , @NamedQuery(name = "Query.findByUrl", query = "SELECT q FROM Query q WHERE q.url = :url")
     , @NamedQuery(name = "Query.findByMethod", query = "SELECT q FROM Query q WHERE q.method = :method")
@@ -65,6 +65,12 @@ public class Query implements Serializable {
         this.id = id;
         this.url = url;
         this.method = method;
+    }
+    
+    public Query(String url, String method, String params) {
+        this.url = url;
+        this.method = method;
+        this.params = params;
     }
 
     public Integer getId() {

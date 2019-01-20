@@ -47,12 +47,14 @@ class Table extends preact.Component {
 
 var fileData = {}
 
-function buildLevel(namespace, obj, level) {
+function buildLevel(namespace, obj, level, props) {
+    console.log('buildLevel', namespace, obj, level, props)
+    
     var result = Object.keys(obj).map((key) => {
         var element
         
         if (typeof obj[key] == 'object') {
-            element = buildLevel(namespace + '.' + key, obj[key], level + 1)
+            element = buildLevel(namespace + '.' + key, obj[key], level + 1, props)
         } else if (obj[key] == 'text') {
             element = h('input', {type: 'text', id: 'qb_' + namespace + '.' + key})
         } else if (obj[key] == 'number') {
@@ -79,6 +81,21 @@ function buildLevel(namespace, obj, level) {
             ])
         )
     })
+    
+    result.unshift(h('div', {style: {'padding-left': level*30 + 'px'}}, "{"))
+    
+    result.push(h('input', {
+        type: 'text',
+        id: 'newObjInput_' + namespace,
+        style: {'margin-left': (level+1)*30 + 'px'}
+    }))
+    
+    result.push(h('button', {
+        className: 'btn btn-primary',
+        onClick: props.onNewObject.bind(null, obj, 'newObjInput_' + namespace),
+    }, "Add an object"))
+    
+    result.push(h('div', {style: {'padding-left': level*30 + 'px'}}, "}"))
     
     console.log("buildLevel", result)
     return result
@@ -119,7 +136,7 @@ class QueryBuilder extends preact.Component {
         }
     }
     
-    onSubmit(schema) {
+    onSubmit(schema, saveQuery) {
         var request = {}
         
         buildRequest(request, '', schema)
@@ -147,11 +164,15 @@ class QueryBuilder extends preact.Component {
                     msgType: 'danger'
                 })
             } else if (response.status == 204) {
-                console.log('respone 204')
-                
                 this.setState({
                     message: 'OK',
                     msgType: 'success'
+                })
+                
+                saveQuery({
+                    url: url,
+                    method: method,
+                    params: schema
                 })
             } else {
                 corr = true
@@ -163,8 +184,14 @@ class QueryBuilder extends preact.Component {
     
             if (corr) {
                 this.setState({
-                    message: JSON.stringify(json),
+                    message: JSON.stringify(json, null, 2),
                     msgType: 'success'
+                })
+                
+                saveQuery({
+                    url: url,
+                    method: method,
+                    params: schema
                 })
             }
         })
@@ -179,25 +206,14 @@ class QueryBuilder extends preact.Component {
     }
     
     render(props, state) {
-        var schema
-        
-        console.log(props.schemaJson)
-        
-        try {
-            schema = JSON.parse(props.schemaJson);
-        } catch (e) {
-            console.warn(e.message)
-            schema = {}
-        }
-        
-        console.log('Render QueryBuilder. schema = ', schema)
+        console.log('Render QueryBuilder. schema = ', props.schema)
         
         return h('div', null, [
               h('label', null, "URL", h('input', {type: 'text', id: 'inputUrl', value: props.url})),
               h('label', null, "Method", h('input', {type: 'text', id: 'inputMethod', value: props.method})),
-              h('div', null, buildLevel('', schema, 0)),
+              h('div', null, buildLevel('', props.schema, 0, props)),
               h('h3', null, "Submit"),
-              h('button', {className: "btn btn-primary", onClick: this.onSubmit.bind(this, schema)}, "Submit"),
+              h('button', {className: "btn btn-primary", onClick: this.onSubmit.bind(this, props.schema, props.saveQuery)}, "Submit"),
               (this.state.message) ? h('div', {className: 'alert alert-' + this.state.msgType, role: 'alert'}, this.state.message) : null
         ])
     }
@@ -210,10 +226,31 @@ class Main extends preact.Component {
         
         this.state = {
             queries: null,
-            selectedQuery: null
+            query: {params: {}}
         }
         
         this.fetchQueries();
+    }
+    
+    saveQuery(query) {
+        console.log('saveQuery', query)
+        
+        fetch('api/Querier', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                url: query.url,
+                method: query.method,
+                params: JSON.stringify(query.params)
+            })
+        })
+        .then(response => {
+            console.log('saveQueryResponse', response)
+    
+            this.fetchQueries();
+        })
     }
     
     fetchQueries() {
@@ -230,10 +267,39 @@ class Main extends preact.Component {
     
     selectedQuery(query) {
         console.log('selectedQuery', query)
-        this.setState({selectedQuery: query})
+        
+        try {
+            query.params = JSON.parse(query.params);
+        } catch (e) {
+            console.warn(e.message)
+            query.params = {}
+        }
+        
+        this.setState({query: query})
+    }
+    
+    onNewObject(parent, id) {
+        var objName = document.getElementById(id).value
+        console.log('onNewObject', parent, objName)
+        
+        if (!objName) return
+        
+        parent[objName] = {}
+        
+        document.getElementById(id).value = ''
+        
+        console.log(parent)
+        
+        this.forceUpdate()
+        //this.setState({query: this.state.query})
+    }
+    
+    onNewArray(parent) {
+        console.log('onNewArray', parent)
     }
 
     render(props, state) {
+        
         return (
           h('div', {className: 'container'},
             h('div', {className: 'row'}, [
@@ -249,11 +315,15 @@ class Main extends preact.Component {
                 ]),
                 h('div', {className: 'col'}, [
                     h('h3', null, 'Query builder'),
-                    ((this.state.selectedQuery) ? (
-                        h(QueryBuilder, {schemaJson: this.state.selectedQuery.params, method: this.state.selectedQuery.method, url: this.state.selectedQuery.url}, null)
-                    ) : (
-                        h(QueryBuilder, {schemaJson: "{}"}, null)
-                    ))
+                    h(QueryBuilder, {
+                        onNewObject: this.onNewObject.bind(this),
+                        onNewArray: this.onNewArray.bind(this),
+                        schema: this.state.query.params,
+                        method: this.state.query.method,
+                        url: this.state.query.url,
+                        saveQuery: this.saveQuery.bind(this)
+                    }, null)
+                    
                 ])
             ])
           )
