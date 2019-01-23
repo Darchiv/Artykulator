@@ -3,4 +3,4 @@ A JEE project featuring a resource-handling server and a REST client with a quer
 
 ## Setup
 
-Database schema files reside in `src/main/resources/META-INF`, named `*DB.sql`.
+Database schema files are [AggregatorDB](src/main/resources/META-INF/AggregatorDB.sql) and [QuerierDB](src/main/resources/META-INF/QuerierDB.sql).
