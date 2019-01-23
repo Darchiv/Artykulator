@@ -67,7 +67,7 @@ function buildLevel(namespace, obj, level, props) {
         } else if (obj[key] == 'text') {
             element = h('input', {type: 'text', id: 'qb_' + namespace + '.' + key})
         } else if (obj[key] == 'number') {
-            element = h('input', {type: 'number', id: 'qb_' + namespace + '.' + key})
+            element = h('input', {type: 'number', id: 'qb_' + namespace + '.' + key, required: true})
         } else if (obj[key] == 'fileArr') {
             element = h('input', {type: 'file', id: 'qb_' + namespace + '.' + key, onchange: (e) => {
                 var fileList = e.target.files
@@ -140,7 +140,7 @@ function buildLevel(namespace, obj, level, props) {
     return result
 }
 
-async function buildRequest(request, namespace, obj) {
+function buildRequest(request, namespace, obj) {
     console.log('buildRequest: ', request, namespace, obj)
 
     const putElem = (element, target, key) => {
@@ -151,7 +151,7 @@ async function buildRequest(request, namespace, obj) {
         }
     }
 
-    Object.keys(obj).map(async (key) => {
+    Object.keys(obj).map((key) => {
         var element
 
         if (Array.isArray(obj[key])) {
@@ -167,6 +167,11 @@ async function buildRequest(request, namespace, obj) {
             request[key] = element.value
         } else if (obj[key] == 'number') {
             element = document.getElementById('qb_' + namespace + '.' + key)
+            
+            if (element.validity.badInput) {
+                throw new Error(key + ': ' + element.validationMessage)
+            }
+            
             request[key] = element.value
         } else if (obj[key] == 'fileArr') {
             request[key] = fileData['qb_' + namespace + '.' + key]
@@ -191,7 +196,12 @@ class QueryBuilder extends preact.Component {
     onSubmit(schema, saveQuery) {
         var request = {}
         
-        buildRequest(request, '', schema)
+        try {
+            buildRequest(request, '', schema)
+        } catch(e) {
+            alert(e.message)
+            return
+        }
         
         console.log("Submiting. schema = ", schema, ", request = ", request)
         
