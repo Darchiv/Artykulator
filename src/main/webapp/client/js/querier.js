@@ -33,7 +33,14 @@ class Table extends preact.Component {
                                           onClick: props.selectHandler.bind(null, elem)
                                       }, 'select')
                                     : h('td', null,
-                                        elem[key]
+                                        (key === 'file' && props.fileLink) ? (
+                                            h('a', {
+                                                href: window.URL.createObjectURL(new Blob([(new Int8Array(elem[key])).buffer]))
+                                            }, 'download')
+                                        )
+                                        : (typeof elem[key] === 'object') ? (
+                                             JSON.stringify(elem[key], null, 1)
+                                        ) : elem[key]
                                     )
                                 )
                             )
@@ -196,7 +203,7 @@ class QueryBuilder extends preact.Component {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json, text/plain'
             },
             body: (method == 'get' || method == 'delete') ? undefined : JSON.stringify(request)
         })
@@ -206,12 +213,14 @@ class QueryBuilder extends preact.Component {
             if (!response.ok) {
                 this.setState({
                     message: response.status + ' ' + response.statusText,
-                    msgType: 'danger'
+                    msgType: 'danger',
+                    results: null
                 })
             } else if (response.status == 204) {
                 this.setState({
                     message: 'OK',
-                    msgType: 'success'
+                    msgType: 'success',
+                    results: null
                 })
                 
                 saveQuery({
@@ -221,7 +230,18 @@ class QueryBuilder extends preact.Component {
                 })
             } else {
                 corr = true
-                return response.json()
+                
+                if (response.headers.get('Content-Type') !== 'application/json') {
+                    response.text().then((text) => {
+                        this.setState({
+                            message: text,
+                            msgType: 'success',
+                            results: null
+                        })
+                    })
+                } else {
+                    return response.json()
+                }
             }
         })
         .then((json) => {
@@ -229,8 +249,9 @@ class QueryBuilder extends preact.Component {
     
             if (corr) {
                 this.setState({
-                    message: JSON.stringify(json, null, 2),
-                    msgType: 'success'
+                    message: 'OK',
+                    msgType: 'success',
+                    results: Array.isArray(json) ? json : [json]
                 })
                 
                 saveQuery({
@@ -245,7 +266,8 @@ class QueryBuilder extends preact.Component {
     
             this.setState({
                 message: error.message,
-                msgType: 'danger'
+                msgType: 'danger',
+                results: null
             })
         })
     }
@@ -253,13 +275,25 @@ class QueryBuilder extends preact.Component {
     render(props, state) {
         console.log('Render QueryBuilder. schema = ', props.schema)
         
+        var resultsMeta = {}
+        
+        if (this.state.results) {
+            this.state.results.forEach((elem) => {
+                Object.keys(elem).forEach((key) => {
+                    resultsMeta[key] = key[0].toUpperCase() + key.substring(1);
+                })
+            })
+        }
+        
         return h('div', null, [
               h('label', null, "URL", h('input', {type: 'text', id: 'inputUrl', value: props.url})),
               h('label', null, "Method", h('input', {type: 'text', id: 'inputMethod', value: props.method})),
               h('div', null, buildLevel('', props.schema, 0, props)),
               h('h3', null, "Submit"),
               h('button', {className: "btn btn-primary", onClick: this.onSubmit.bind(this, props.schema, props.saveQuery)}, "Submit"),
-              (this.state.message) ? h('div', {className: 'alert alert-' + this.state.msgType, role: 'alert'}, this.state.message) : null
+              (this.state.message) ? h('div', {className: 'alert alert-' + this.state.msgType, role: 'alert'}, this.state.message) : null,
+              h('br'),
+              h(Table, {list: this.state.results, meta: resultsMeta, fileLink: true})
         ])
     }
 }
